@@ -16,8 +16,6 @@ app.get('/',(req,res) => {
     res.send('App Works !');
 });
 
-
-
 const Schema = new mongoose.Schema({
     email: String,
     password: String
@@ -25,16 +23,32 @@ const Schema = new mongoose.Schema({
 
 const loginModel = mongoose.model('login',Schema);
 
-mongoose.connect(mongoURI,(err,client)=>{
-    if(err){
-        console.log(err);
-    }else{
-        console.log("Connected to Database!");
-        fetchAllEntries();
-        //saveOneLogin();
-    }
-});
+app.post('/sendToDb',(req,res)=>{
 
+    mongoose.connect(mongoURI,(err,client)=>{
+        if(err){
+            console.log(err);
+        }else{
+            console.log("Connected to Database!");
+            //fetchAllEntries();
+            //saveOneLogin();
+        }
+    });
+
+    const login = new loginModel({
+        email:'newuser@email.com',
+        password:'password'
+    })
+
+    db.collection('logins').insertOne(login,(err)=>{
+            if(err){
+                console.log(err);
+            }else{
+                console.log("Record Inserted!");
+            }
+    })
+    return res.redirect("/")
+})
 //--------*START* FETCH ALL RECORDS------------//
 async function fetchAllEntries(){
     loginModel.find({}, function(err, data){
@@ -44,17 +58,7 @@ async function fetchAllEntries(){
 
 //--------SAVE LOGIN INFO---------------//
 async function saveOneLogin(){
-    const login = new loginModel({
-        email:'ankitfake913@gmail.com',
-        password:'12345678'
-    })
-    db.collection('logins').insertOne(login,(err)=>{
-            if(err){
-                console.log(err);
-            }else{
-                console.log("Record Inserted!");
-            }
-    })
+    
 }
 
 
