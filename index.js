@@ -21,49 +21,107 @@ app.get('/',(req,res) => {
     res.send('App Works !');
 });
 
-const Schema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
+    firstname: String,
+    lastname: String,
+    email: String,
+    password: String,
+    fathername: String,
+    dob: String,
+    rollnumber: String,
+    school: String,
+    standard: String,
     email: String,
     password: String
 });
 
-const loginModel = mongoose.model('login',Schema);
+const userModel = mongoose.model('user',userSchema);
 
-app.post('/sendToDb',(req,res)=> {
 
-    var { email, password } = req.body
-    //console.log(email, password);
+//-------- CONNECT to database -------------//
+mongoose.connect(mongoURI,(err,client)=>{
+    if(err){
+        console.log(err);
+    }else{
+        console.log("Connected to Database!");
+    }
+});
 
-    mongoose.connect(mongoURI,(err,client)=>{
-        if(err){
-            console.log(err);
+
+
+//-------- DISCONNECT database -------------//
+function disconnectFromDatabase(){
+    db.close();
+    console.log("Disconnected From Database!");
+}
+
+app.post('/login',(req,res)=>{
+
+    let { email, password } = req.body;
+
+    userModel.findOne({'email':email},(err,data)=>{   
+        if(data){
+            //console.log(data);
+            if(data['password']==password){
+                return res.status(200).send({
+                    success: true,
+                    user : data,
+                })
+            }else{
+                return res.status(400).send({
+                    success: false,
+                })
+            }
         }else{
-            console.log("Connected to Database!");
-            //fetchAllEntries();
-            //saveOneLogin();
+            return res.status(404).send({
+                success: false,
+            })
         }
     });
 
-    const login = new loginModel({
+})
+
+app.post('/signup',(req ,res)=>{
+    console.log(req.body);
+    let { firstname, lastname, fathername, dob, rollnumber, school, standard, email, password } = req.body;
+
+    const user = new userModel({
+        firstname: firstname,
+        lastname: lastname,
+        email: email,
+        password: password,
+        fathername: fathername,
+        dob: dob,
+        rollnumber: rollnumber,
+        school: school,
+        standard: standard,
         email: email,
         password: password
     })
-
-    db.collection('logins').insertOne(login,(err)=>{
-            if(err){
-                console.log(err);
-            }else{
-                console.log("Record Inserted!");
-            }
-    })
-    //return res.status(200)
-    return res.status(200).send({
-        success: true
-    })
+    userModel.find({'email':email},(err,data)=>{
+        if(data.length>0){
+            return res.status(200).send({
+                success: false,
+            })
+        }else{
+            db.collection('users').insertOne(user,(err)=>{
+                if(err){
+                    console.log(err);
+                }
+                return res.status(200).send({
+                    success: true,
+                    data: user,
+                })
+            })   
+        }     
+    });
+    
 })
+
 //--------*START* FETCH ALL RECORDS------------//
 async function fetchAllEntries(){
     loginModel.find({}, function(err, data){
-        console.log(">>>> " + data );
+        console.log(">>>> ", data );
     });
 }
 
