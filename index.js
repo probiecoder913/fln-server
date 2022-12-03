@@ -96,7 +96,8 @@ app.post('/signup',(req ,res)=>{
         school: school,
         standard: standard,
         email: email,
-        password: password
+        password: password,
+        result: ''
     })
     userModel.find({'email':email},(err,data)=>{
         if(data.length>0){
@@ -118,9 +119,19 @@ app.post('/signup',(req ,res)=>{
     
 })
 
+app.post('/submitQuizResponse',(req,res)=>{
+    let { userEmail, result } = req.body;
+    // console.log(req.body);
+    db.collection('users').updateOne({email: userEmail}, { $set: {result: result}});
+    fetchAllEntries();
+    return res.status(200).send({
+        success:true,
+        // score:result,
+    })
+})
 //--------*START* FETCH ALL RECORDS------------//
 async function fetchAllEntries(){
-    loginModel.find({}, function(err, data){
+    userModel.find({}, function(err, data){
         console.log(">>>> ", data );
     });
 }
