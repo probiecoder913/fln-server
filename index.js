@@ -34,9 +34,15 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String
 });
+const resultSchema = new mongoose.Schema({
+    attempted: String,
+    correct: String,
+    incorrect: String
+})
+
 
 const userModel = mongoose.model('user',userSchema);
-
+const resultModel = mongoose.model('result',resultSchema);
 
 //-------- CONNECT to database -------------//
 mongoose.connect(mongoURI,(err,client)=>{
@@ -97,7 +103,6 @@ app.post('/signup',(req ,res)=>{
         standard: standard,
         email: email,
         password: password,
-        result: ''
     })
     userModel.find({'email':email},(err,data)=>{
         if(data.length>0){
@@ -118,16 +123,37 @@ app.post('/signup',(req ,res)=>{
     });
     
 })
+app.post('/getUserResult',(req,res)=>{
+    let { userEmail } = req.body;
+    resultModel.find({'email':userEmail},(err,data)=>{
+        if(data.length>0){
+            return res.status(200).send({
+                data: data,
+                success: true
+            });
+        }else{
+            return res.status(200).send({
+                data : data,
+                success : false,
+            })
+        }
+    })
+})
 
 app.post('/submitQuizResponse',(req,res)=>{
     let { userEmail, result } = req.body;
-    // console.log(req.body);
-    db.collection('users').updateOne({email: userEmail}, { $set: {result: result}});
-    fetchAllEntries();
+    db.collection('results').updateOne({email:userEmail},{$set:{email:userEmail, result: result}},{upsert:true});
     return res.status(200).send({
         success:true,
-        // score:result,
+        score:result
     })
+    // console.log(req.body);
+    // db.collection('users').updateOne({email: userEmail}, { $set: {result: result}});
+    // fetchAllEntries();
+    // return res.status(200).send({
+    //     success:true,
+    //     // score:result,
+    // })
 })
 //--------*START* FETCH ALL RECORDS------------//
 async function fetchAllEntries(){
