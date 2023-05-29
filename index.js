@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("CORS")
 
+
 const app = express();
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -12,6 +13,7 @@ app.use(cors());
 mongoURI = "mongodb+srv://ankit913:ankit913@cluster0.wu1svov.mongodb.net/fln-test";
 const db = mongoose.connection;
 const PORT = process.env.PORT || 3000;
+
 
 app.listen(PORT,()=>{
     console.log("Listening on PORT: "+ PORT);
@@ -53,7 +55,12 @@ mongoose.connect(mongoURI,(err,client)=>{
     }
 });
 
-
+app.post('/fileUploadTestAPI',(req,res)=>{
+    console.log("API CALLED!!");
+    return res.status(200).send({
+        success: true,
+    })
+});
 
 //-------- DISCONNECT database -------------//
 function disconnectFromDatabase(){
@@ -138,6 +145,7 @@ app.post('/getUserResult',(req,res)=>{
             })
         }
     })
+    transporter.sendMail(mailOptions, callback)
 })
 
 app.post('/submitQuizResponse',(req,res)=>{
